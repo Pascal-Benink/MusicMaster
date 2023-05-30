@@ -7,9 +7,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Title>MusicMaster</Title>
-	  <Version>0.9.3.0</Version>
-	  <AssemblyVersion>0.9.3.0</AssemblyVersion>
-	  <FileVersion>0.9.3.0</FileVersion>
+	  <Version>1.0.0.0</Version>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
 	  <Copyright>Copyright © 2023</Copyright>
   </PropertyGroup>
 
@@ -23,6 +23,10 @@
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>

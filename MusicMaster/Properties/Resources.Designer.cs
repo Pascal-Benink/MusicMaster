@@ -63,6 +63,16 @@ namespace MusicMaster.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap DefaultAlbumCover {
+            get {
+                object obj = ResourceManager.GetObject("DefaultAlbumCover", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap musicmaster {
             get {
                 object obj = ResourceManager.GetObject("musicmaster", resourceCulture);

@@ -53,6 +53,9 @@
             label5 = new Label();
             AlbumCover = new PictureBox();
             label4 = new Label();
+            label6 = new Label();
+            NewVersion = new Button();
+            button3 = new Button();
             ((System.ComponentModel.ISupportInitialize)Volume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartPic).BeginInit();
             ((System.ComponentModel.ISupportInitialize)AlbumCover).BeginInit();
@@ -296,19 +299,53 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(107, 0);
+            label4.Location = new Point(192, 220);
             label4.Name = "label4";
             label4.Size = new Size(59, 25);
             label4.TabIndex = 25;
             label4.Text = "label4";
             label4.Visible = false;
             // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(192, 298);
+            label6.Name = "label6";
+            label6.Size = new Size(59, 25);
+            label6.TabIndex = 26;
+            label6.Text = "label6";
+            label6.Visible = false;
+            // 
+            // NewVersion
+            // 
+            NewVersion.Location = new Point(-1, 113);
+            NewVersion.Name = "NewVersion";
+            NewVersion.Size = new Size(541, 128);
+            NewVersion.TabIndex = 27;
+            NewVersion.Text = "Version {tagName} of MusicMaster Is Out Click Here To Download\" +\r\n$\" You Rurrent version is {currentgithubversion}";
+            NewVersion.UseVisualStyleBackColor = true;
+            NewVersion.Visible = false;
+            NewVersion.Click += NewVersion_Click;
+            // 
+            // button3
+            // 
+            button3.Location = new Point(181, 239);
+            button3.Name = "button3";
+            button3.Size = new Size(180, 34);
+            button3.TabIndex = 28;
+            button3.Text = "Keep Old Version";
+            button3.UseVisualStyleBackColor = true;
+            button3.Visible = false;
+            button3.Click += button3_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(543, 378);
-            Controls.Add(StartPic);
+            Controls.Add(button3);
+            Controls.Add(NewVersion);
+            Controls.Add(label6);
             Controls.Add(label4);
             Controls.Add(AlbumCover);
             Controls.Add(label5);
@@ -332,6 +369,7 @@
             Controls.Add(label2);
             Controls.Add(MusicFolderConfirm);
             Controls.Add(MusicFolder);
+            Controls.Add(StartPic);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MaximumSize = new Size(565, 434);
@@ -372,5 +410,8 @@
         private Label label5;
         private PictureBox AlbumCover;
         private Label label4;
+        private Label label6;
+        private Button NewVersion;
+        private Button button3;
     }
 }

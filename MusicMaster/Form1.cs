@@ -14,6 +14,12 @@ using System.Reflection.Emit;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.Security.Policy;
+using System.Net.Http.Headers;
+using System.Windows;
+using TagLib.Mpeg;
 
 namespace MusicMaster
 {
@@ -30,6 +36,7 @@ namespace MusicMaster
         string musicFolderPathdefault = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         string musicFolderPath;
         bool playing = false;
+        int skipdelay;
         public Form1()
         {
             // InitializeComponent needs to be first
@@ -43,8 +50,8 @@ namespace MusicMaster
             var versiontxt = "V" + version;
             /*var versiontxt2 = "V" + version.Major + "." + version.Minor + " (build " + version.Build + ")";*/
             label3.Text = versiontxt;
-            var gitreleaseversion = "1.0.0.0";
             imgload();
+            GetLatestRelease();
         }
         //make the statupscreen change pic end go away 
         private async Task imgload()
@@ -114,7 +121,7 @@ namespace MusicMaster
                         UpdateAlbumCover();
 
                         UpdateMusicTotalTimeDisplay();
-                        bool playing = true;
+                        playing = true;
                         //run task to update musictime
                         Task.Run(async () =>
                         {
@@ -157,7 +164,7 @@ namespace MusicMaster
             musicdisplay = musicName + " - " + musicmake;
             NowPlaying.Text = "Now Paused: " + musicdisplay;
             player.controls.pause();
-            bool playing = false;
+            playing = false;
         }
         //stop button
         private void Stop_Click(object sender, EventArgs e)
@@ -165,63 +172,78 @@ namespace MusicMaster
             NowPlaying.Text = "Now Playing: Nothing";
             player.controls.stop();
             start = false;
-            bool playing = false;
+            playing = false;
             AlbumCover.Image = null;
         }
         // go 1 musicfile back
         private void Back_Click(object sender, EventArgs e)
         {
-            if (player.currentPlaylist != null)
+            if (playing == false)
             {
-                // Check if current track is the first track in the playlist
-                if (player.controls.currentItem == player.currentPlaylist.Item[0])
-                {
-                    // Loop back to the last track
-                    player.controls.currentItem = player.currentPlaylist.Item[player.currentPlaylist.count - 1];
-                }
-                else
-                {
-                    // Go to the previous track
-                    player.controls.previous();
-                }
-                currentMusicIndex = player.currentPlaylist.count;
 
-                // Update label with current track information
-                musicName = player.currentMedia.getItemInfo("Title");
-                musicmake = player.currentMedia.getItemInfo("Artist");
-                musicdisplay = musicName + " - " + musicmake;
-                NowPlaying.Text = "Now Playing: " + musicdisplay;
-                //display album cover
-                UpdateAlbumCover();
+            }
+            else
+            {
+                if (player.currentPlaylist != null)
+                {
+                    // Check if current track is the first track in the playlist
+                    if (player.controls.currentItem == player.currentPlaylist.Item[0])
+                    {
+                        // Loop back to the last track
+                        player.controls.currentItem = player.currentPlaylist.Item[player.currentPlaylist.count - 1];
+                    }
+                    else
+                    {
+                        // Go to the previous track
+                        player.controls.previous();
+                    }
+                    currentMusicIndex = player.currentPlaylist.count;
 
+                    // Update label with current track information
+                    musicName = player.currentMedia.getItemInfo("Title");
+                    musicmake = player.currentMedia.getItemInfo("Artist");
+                    musicdisplay = musicName + " - " + musicmake;
+                    NowPlaying.Text = "Now Playing: " + musicdisplay;
+                    //display album cover
+                    UpdateAlbumCover();
+                    SkipRegulator();
+                }
             }
         }
         //skip 1 file
         private void Skip_Click(object sender, EventArgs e)
         {
-            if (player.currentPlaylist != null)
+            if (playing == false)
             {
-                // Check if current track is the last track in the playlist
-                if (player.controls.currentItem == player.currentPlaylist.Item[player.currentPlaylist.count - 1])
+
+            }
+            else
+            {
+                if (player.currentPlaylist != null)
                 {
-                    // Loop back to the first track
-                    player.controls.currentItem = player.currentPlaylist.Item[0];
-                }
-                else
-                {
-                    // Go to the next track
-                    player.controls.next();
-                }
-                currentMusicIndex = player.currentPlaylist.count;
+                    // Check if current track is the last track in the playlist
+                    if (player.controls.currentItem == player.currentPlaylist.Item[player.currentPlaylist.count - 1])
+                    {
+                        // Loop back to the first track
+                        player.controls.currentItem = player.currentPlaylist.Item[0];
+                    }
+                    else
+                    {
+                        // Go to the next track
+                        player.controls.next();
+                    }
+                    currentMusicIndex = player.currentPlaylist.count;
 
 
-                // Update label with current track information
-                /*                musicName = Path.GetFileNameWithoutExtension(player.controls.currentItem.sourceURL);*/
-                musicName = player.currentMedia.getItemInfo("Title");
-                musicmake = player.currentMedia.getItemInfo("Artist");
-                musicdisplay = musicName + " - " + musicmake;
-                //display album cover
-                UpdateAlbumCover();
+                    // Update label with current track information
+                    /*                musicName = Path.GetFileNameWithoutExtension(player.controls.currentItem.sourceURL);*/
+                    musicName = player.currentMedia.getItemInfo("Title");
+                    musicmake = player.currentMedia.getItemInfo("Artist");
+                    musicdisplay = musicName + " - " + musicmake;
+                    //display album cover
+                    UpdateAlbumCover();
+                    SkipRegulator();
+                }
             }
         }
         //Mute button
@@ -299,7 +321,7 @@ namespace MusicMaster
         {
             string currentMusicFile = player.currentMedia.sourceURL;
 
-            if (File.Exists(currentMusicFile))
+            if (System.IO.File.Exists(currentMusicFile))
             {
                 var file = TagLib.File.Create(currentMusicFile);
 
@@ -313,7 +335,7 @@ namespace MusicMaster
                 else
                 {
                     // Clear the PictureBox if no album cover is available
-                    AlbumCover.Image = MusicMaster.Properties.Resources.DefaultAlbumCover;
+                    AlbumCover.Image = Properties.Resources.DefaultAlbumCover;
                     AlbumCover.SizeMode = PictureBoxSizeMode.StretchImage;
                 }
             }
@@ -323,14 +345,12 @@ namespace MusicMaster
         {
             var newpositien = player.controls.currentPosition + 10;
             player.controls.currentPosition = newpositien;
-            UpdateMusicTimeDisplay();
         }
         //10sec back
         private void button2_Click(object sender, EventArgs e)
         {
             var newpositien = player.controls.currentPosition - 10;
             player.controls.currentPosition = newpositien;
-            UpdateMusicTimeDisplay();
         }
         //let it stay-no function
         private void musictime_Click(object sender, EventArgs e)
@@ -341,6 +361,75 @@ namespace MusicMaster
         private void Albumcover_Click(object sender, EventArgs e)
         {
 
+        }
+        //github version checker
+        private async Task GetLatestRelease()
+        {
+            string apiUrl = "https://api.github.com/repos/Pascal-Benink/MusicMaster/releases/latest";
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "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");
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; MSIE 11.0; Windows NT 10.0; WOW64; Trident/7.0)");
+
+                try
+                {
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string currentgithubversion = "v1.1.5.0";
+                        string json = await response.Content.ReadAsStringAsync();
+                        dynamic release = JsonConvert.DeserializeObject(json);
+                        string tagName = release.tag_name;
+                        /*label6.Text = "Latest Release Tag: " + tagName;*/
+                        if (tagName == currentgithubversion)
+                        {
+
+                        }
+                        else
+                        {
+                            NewVersion.Visible = true;
+                            NewVersion.Text = $"Version {tagName} of MusicMaster Is Out Click Here To Download" +
+                                $" You Rurrent version is {currentgithubversion}";
+                            button3.Visible = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    label6.Visible = true;
+                    label6.Text = "An error occurred: " + ex.Message;
+                }
+            }
+        }
+
+        private void NewVersion_Click(object sender, EventArgs e)
+        {
+            string url = "https://github.com/Pascal-Benink/MusicMaster/releases/latest";
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            NewVersion.Visible = false;
+            button3.Visible = false;
+        }
+        //Regulate skippablitiy to let everything load after each skip
+        private async Task SkipRegulator()
+        {
+            for (int i = 3; i > 0; i--)
+            {
+                Skip.Enabled = false;
+                Back.Enabled = false;
+                await Task.Delay(200);
+            }
+            Skip.Enabled = true;
+            Back.Enabled = true;
         }
     }
 }

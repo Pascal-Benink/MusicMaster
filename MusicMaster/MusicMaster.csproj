@@ -7,9 +7,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Title>MusicMaster</Title>
-	  <Version>1.0.0.0</Version>
-	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
-	  <FileVersion>1.0.0.0</FileVersion>
+	  <Version>1.1.5.0</Version>
+	  <AssemblyVersion>1.1.5.0</AssemblyVersion>
+	  <FileVersion>1.1.5.0</FileVersion>
 	  <Copyright>Copyright © 2023</Copyright>
   </PropertyGroup>
 
@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicMaster", "MusicMaster\MusicMaster.csproj", "{51A0B8F9-F12A-4FC1-BC87-5201D915DE97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicMaster", "MusicMaster\MusicMaster.csproj", "{51A0B8F9-F12A-4FC1-BC87-5201D915DE97}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "MusicMaster-Installer", "..\..\Mus\MusicMaster-Installer\MusicMaster-Installer.vdproj", "{AF2228DB-2DBC-4AC3-BC7D-6B23E3E423EE}"
 EndProject

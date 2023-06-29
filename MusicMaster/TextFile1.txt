@@ -2,3 +2,14 @@
 01 - fix fast skip - done
 02 - Een readme maken
 03 - Op de Codeing enterprice site een download maken naar MusicMaster.msi voor altijd de laatste release - done
+
+Commit Conventions:
+Release 1.2.0.0
+
+Change Log 1.2.0.0:
+Added a way to see your playlist
+Added a way do sellect wich musicfile in you playlist you want to play
+Added Desktop Shortcut
+Added Program Menu Shortcut
+Minor Bug fixxes
+Improved Stability

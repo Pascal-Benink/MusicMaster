@@ -56,6 +56,11 @@
             label6 = new Label();
             NewVersion = new Button();
             button3 = new Button();
+            textBox1 = new TextBox();
+            Copyright = new Label();
+            playlistListBox = new ListBox();
+            bugreport = new Label();
+            link = new LinkLabel();
             ((System.ComponentModel.ISupportInitialize)Volume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartPic).BeginInit();
             ((System.ComponentModel.ISupportInitialize)AlbumCover).BeginInit();
@@ -187,7 +192,7 @@
             Mute.Location = new Point(393, 232);
             Mute.Name = "Mute";
             Mute.RightToLeft = RightToLeft.No;
-            Mute.Size = new Size(130, 49);
+            Mute.Size = new Size(142, 49);
             Mute.TabIndex = 14;
             Mute.Text = "Mute";
             Mute.UseVisualStyleBackColor = true;
@@ -198,7 +203,7 @@
             Unmute.Location = new Point(394, 287);
             Unmute.Name = "Unmute";
             Unmute.RightToLeft = RightToLeft.No;
-            Unmute.Size = new Size(130, 47);
+            Unmute.Size = new Size(141, 47);
             Unmute.TabIndex = 15;
             Unmute.Text = "Unmute";
             Unmute.UseVisualStyleBackColor = true;
@@ -227,11 +232,11 @@
             // 
             StartPic.BackgroundImageLayout = ImageLayout.Center;
             StartPic.Image = Properties.Resources.musicmaster___nocode;
-            StartPic.Location = new Point(-1, -1);
+            StartPic.Location = new Point(-15, -8);
             StartPic.Name = "StartPic";
             StartPic.Padding = new Padding(145, 0, 0, 0);
-            StartPic.Size = new Size(611, 614);
-            StartPic.SizeMode = PictureBoxSizeMode.AutoSize;
+            StartPic.Size = new Size(1011, 614);
+            StartPic.SizeMode = PictureBoxSizeMode.CenterImage;
             StartPic.TabIndex = 18;
             StartPic.TabStop = false;
             StartPic.Click += StartPic_Click;
@@ -320,7 +325,7 @@
             // 
             NewVersion.Location = new Point(-1, 113);
             NewVersion.Name = "NewVersion";
-            NewVersion.Size = new Size(541, 128);
+            NewVersion.Size = new Size(997, 128);
             NewVersion.TabIndex = 27;
             NewVersion.Text = "Version {tagName} of MusicMaster Is Out Click Here To Download\" +\r\n$\" You Rurrent version is {currentgithubversion}";
             NewVersion.UseVisualStyleBackColor = true;
@@ -329,7 +334,7 @@
             // 
             // button3
             // 
-            button3.Location = new Point(181, 239);
+            button3.Location = new Point(411, 239);
             button3.Name = "button3";
             button3.Size = new Size(180, 34);
             button3.TabIndex = 28;
@@ -338,13 +343,69 @@
             button3.Visible = false;
             button3.Click += button3_Click;
             // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(153, 47);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(150, 31);
+            textBox1.TabIndex = 29;
+            textBox1.Visible = false;
+            // 
+            // Copyright
+            // 
+            Copyright.AutoSize = true;
+            Copyright.Location = new Point(441, 344);
+            Copyright.Name = "Copyright";
+            Copyright.Size = new Size(91, 25);
+            Copyright.TabIndex = 30;
+            Copyright.Text = "Copyright";
+            Copyright.Visible = false;
+            // 
+            // playlistListBox
+            // 
+            playlistListBox.FormattingEnabled = true;
+            playlistListBox.ItemHeight = 25;
+            playlistListBox.Location = new Point(546, 12);
+            playlistListBox.Name = "playlistListBox";
+            playlistListBox.Size = new Size(450, 354);
+            playlistListBox.TabIndex = 31;
+            playlistListBox.SelectedIndexChanged += playlistListBox_SelectedIndexChanged;
+            // 
+            // bugreport
+            // 
+            bugreport.AutoSize = true;
+            bugreport.Location = new Point(108, 344);
+            bugreport.Name = "bugreport";
+            bugreport.Size = new Size(253, 25);
+            bugreport.TabIndex = 32;
+            bugreport.Text = "You can report bugs using this";
+            bugreport.Click += bugreport_Click;
+            // 
+            // link
+            // 
+            link.AutoSize = true;
+            link.Location = new Point(354, 344);
+            link.Name = "link";
+            link.Size = new Size(43, 25);
+            link.TabIndex = 33;
+            link.TabStop = true;
+            link.Text = "link.";
+            link.VisitedLinkColor = Color.Blue;
+            link.LinkClicked += link_LinkClicked;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(543, 378);
+            ClientSize = new Size(1005, 378);
+            Controls.Add(StartPic);
+            Controls.Add(link);
+            Controls.Add(bugreport);
             Controls.Add(button3);
             Controls.Add(NewVersion);
+            Controls.Add(playlistListBox);
+            Controls.Add(Copyright);
+            Controls.Add(textBox1);
             Controls.Add(label6);
             Controls.Add(label4);
             Controls.Add(AlbumCover);
@@ -369,10 +430,8 @@
             Controls.Add(label2);
             Controls.Add(MusicFolderConfirm);
             Controls.Add(MusicFolder);
-            Controls.Add(StartPic);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
-            MaximumSize = new Size(565, 434);
             MinimumSize = new Size(565, 434);
             Name = "Form1";
             Text = "MusicMaster";
@@ -413,5 +472,10 @@
         private Label label6;
         private Button NewVersion;
         private Button button3;
+        private TextBox textBox1;
+        private Label Copyright;
+        private ListBox playlistListBox;
+        private Label bugreport;
+        private LinkLabel link;
     }
 }

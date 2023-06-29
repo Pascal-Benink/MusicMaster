@@ -20,6 +20,13 @@ using System.Security.Policy;
 using System.Net.Http.Headers;
 using System.Windows;
 using TagLib.Mpeg;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Numerics;
+
 
 namespace MusicMaster
 {
@@ -38,6 +45,12 @@ namespace MusicMaster
         bool playing = false;
         int skipdelay;
         bool skipable = true;
+        bool shuffler = false;
+        string pastdis;
+        private int previousMusicIndex = -1;
+        bool ThisOneIsSellected = false;
+        bool BeenUsed = false;
+
         public Form1()
         {
             // InitializeComponent needs to be first
@@ -49,6 +62,8 @@ namespace MusicMaster
             musicFolderPath = musicFolderPathdefault;
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             var versiontxt = "V" + version;
+            /*            string copyright = GetCopyrightInformation();
+                        Copyright.Text = copyright;*/
             /*var versiontxt2 = "V" + version.Major + "." + version.Minor + " (build " + version.Build + ")";*/
             label3.Text = versiontxt;
             imgload();
@@ -87,11 +102,15 @@ namespace MusicMaster
         //play button
         private void PlayButton_Click(object sender, EventArgs e)
         {
+            Player();
+        }
+        public void Player()
+        {
             //check if music has been started in this instance
             if (start == true)
             {
                 player.controls.play();
-                NowPlaying.Text = "Now Playing: " + musicName;
+                NowPlaying.Text = "Now Playing: " + musicdisplay;
                 playing = true;
                 Task.Run(async () =>
                 {
@@ -103,6 +122,8 @@ namespace MusicMaster
                         await Task.Delay(200);
                     }
                 });
+                label6.Visible = true;
+                label6.Text = "fromstarttrue";
             }
             else
             {
@@ -119,6 +140,11 @@ namespace MusicMaster
                         {
                             IWMPMedia media = player.newMedia(musicFile);
                             playlist.appendItem(media);
+
+                            string artist = media.getItemInfo("Artist");
+                            string title = media.getItemInfo("Title");
+                            string musicFileName = $"{artist} - {title}";
+                            playlistListBox.Items.Add(musicFileName);
                         }
 
                         player.currentPlaylist = playlist;
@@ -131,7 +157,18 @@ namespace MusicMaster
                         musicdisplay = musicName + " - " + musicmake;
                         NowPlaying.Text = "Now Playing: " + musicdisplay;
                         //display album cover
-                        currentMusicIndex = player.currentPlaylist.count;
+
+                        // Check if a playlist is loaded
+                        if (playlist != null)
+                        {
+                            // Retrieve the current media in the playlist
+                            IWMPMedia currentMedia = player.currentMedia;
+
+                            // Retrieve the index of the current media in the playlist
+                            currentMusicIndex = GetItemIndex(playlist, currentMedia);
+
+                            // Output the current index
+                        }
                         UpdateAlbumCover();
 
                         UpdateMusicTotalTimeDisplay();
@@ -147,6 +184,12 @@ namespace MusicMaster
                                 await Task.Delay(200);
                             }
                         });
+                        ModifyplayListbox_first();
+                        //play sellected song
+                        if (currentMusicIndex >= 0 && currentMusicIndex < musicFiles.Length)
+                        {
+                            player.controls.playItem(player.currentPlaylist.Item[currentMusicIndex]);
+                        }
                     }
                     else
                     {
@@ -158,8 +201,6 @@ namespace MusicMaster
                     MusicFolder.Text = "Geen MuziekFolder gevonden";
                 }
             }
-            label6.Visible = true;
-            label6.Text = playing.ToString();
         }
         //change volume
         private void Volume_ValueChanged(object sender, EventArgs e)
@@ -175,14 +216,16 @@ namespace MusicMaster
         //pause button
         private void Pause_Click(object sender, EventArgs e)
         {
+            Pauser();
+        }
+        public void Pauser()
+        {
             musicName = player.currentMedia.getItemInfo("Title");
             musicmake = player.currentMedia.getItemInfo("Artist");
             musicdisplay = musicName + " - " + musicmake;
             NowPlaying.Text = "Now Paused: " + musicdisplay;
             player.controls.pause();
             playing = false;
-            label6.Visible = true;
-            label6.Text = playing.ToString();
         }
         //stop button
         private void Stop_Click(object sender, EventArgs e)
@@ -225,6 +268,22 @@ namespace MusicMaster
                     //display album cover
                     UpdateAlbumCover();
                     SkipRegulator();
+                    IWMPPlaylist playlist = player.currentPlaylist;
+
+                    // Check if a playlist is loaded
+                    if (playlist != null)
+                    {
+                        // Retrieve the current media in the playlist
+                        IWMPMedia currentMedia = player.currentMedia;
+
+                        // Retrieve the index of the current media in the playlist
+                        currentMusicIndex = GetItemIndex(playlist, currentMedia);
+
+                        // Output the current index
+                    }
+                    label6.Visible = true;
+                    label6.Text = currentMusicIndex.ToString();
+                    ModifyplayListbox();
                 }
             }
         }
@@ -261,6 +320,22 @@ namespace MusicMaster
                     //display album cover
                     UpdateAlbumCover();
                     SkipRegulator();
+                    IWMPPlaylist playlist = player.currentPlaylist;
+
+                    // Check if a playlist is loaded
+                    if (playlist != null)
+                    {
+                        // Retrieve the current media in the playlist
+                        IWMPMedia currentMedia = player.currentMedia;
+
+                        // Retrieve the index of the current media in the playlist
+                        currentMusicIndex = GetItemIndex(playlist, currentMedia);
+
+                        // Output the current index
+                    }
+                    label6.Visible = true;
+                    label6.Text = currentMusicIndex.ToString();
+                    ModifyplayListbox();
                 }
             }
         }
@@ -293,24 +368,100 @@ namespace MusicMaster
             // Check if the new state is "playing"
             if ((WMPPlayState)NewState == WMPPlayState.wmppsPlaying)
             {
+                if (ThisOneIsSellected == false)
+                {
+                    IWMPPlaylist playlist = player.currentPlaylist;
+
+                    // Check if a playlist is loaded
+                    if (playlist != null)
+                    {
+                        // Retrieve the current media in the playlist
+                        IWMPMedia currentMedia = player.currentMedia;
+
+                        // Retrieve the index of the current media in the playlist
+                        currentMusicIndex = GetItemIndex(playlist, currentMedia);
+
+                        // Output the current index
+                    }
+                    label6.Visible = true;
+                    label6.Text = currentMusicIndex.ToString();
+                }
                 // Update the NowPlaying label with the name of the current music file
                 /*musicName = Path.GetFileNameWithoutExtension(player.controls.currentItem.sourceURL);*/
                 musicName = player.currentMedia.getItemInfo("Title");
                 musicmake = player.currentMedia.getItemInfo("Artist");
-                musicdisplay = musicName + " - " + musicmake;
+                musicdisplay = musicmake + " - " + musicName;
                 NowPlaying.Text = "Now Playing: " + musicdisplay;
+
+                ModifyplayListbox();
+
+
                 //display album cover
                 UpdateAlbumCover();
-
                 UpdateMusicTotalTimeDisplay();
+                playlistListBox.SelectedIndex = currentMusicIndex;
+
             }
         }
+        //modify music index
+        private void ModifyplayListbox()
+        {
+            string lastdisplay;
+            //so not every song goes into the location of i song
+            if (ThisOneIsSellected == true)
+            {
+                if (previousMusicIndex != currentMusicIndex)
+                {
+                    /*if (previousMusicIndex != -1)
+                    {
+                        has been moved to down
+                    }*/
+                    currentMusicIndex = playlistListBox.SelectedIndex;
 
+                    /*playlistListBox.Items[currentMusicIndex] = $"@ {musicdisplay}";*/
+                    BeenUsed = true;
+                }
+            }
+            else if (ThisOneIsSellected == false && BeenUsed == false)
+            {
+                /*playlistListBox.Items[currentMusicIndex] = $"@ {musicdisplay}";   */
+                if (previousMusicIndex != -1)
+                {
+                    lastdisplay = playlistListBox.Items[previousMusicIndex].ToString();
+                    lastdisplay = lastdisplay.Replace("@ ", string.Empty);
+                    playlistListBox.Items[previousMusicIndex] = lastdisplay; // Set the previous item back to its original state
+                }
+            }
+            //been moved from line 355 for usability reasons
+            if (ThisOneIsSellected == true && previousMusicIndex != currentMusicIndex && previousMusicIndex != -1)
+            {
+                lastdisplay = playlistListBox.Items[previousMusicIndex].ToString();
+                lastdisplay = lastdisplay.Replace("@ ", string.Empty);
+                playlistListBox.Items[previousMusicIndex] = lastdisplay; // Set the previous item back to its original state
+            }
+            /*            label6.Visible = true;
+                        label6.Text = "werkt";*/
+            ThisOneIsSellected = false;
+            previousMusicIndex = currentMusicIndex;
+            BeenUsedFix();
+        }
+        //beenusedfix after ModifyplayListbox is fully done
+        private async Task BeenUsedFix()
+        {
+            await Task.Delay(600);
+            BeenUsed = false;
+        }
+        private void ModifyplayListbox_first()
+        {
+            /*playlistListBox.Items[currentMusicIndex] = $"@ {musicdisplay}";*/
+            previousMusicIndex = currentMusicIndex;
+        }
+        //let it stay-no function
         private void StartPic_Click(object sender, EventArgs e)
         {
 
         }
-        //let it stay-no function
+
         private void Form1_Load(object sender, EventArgs e)
         {
 
@@ -383,11 +534,34 @@ namespace MusicMaster
         //github version checker
         private async Task GetLatestRelease()
         {
+
             string apiUrl = "https://api.github.com/repos/Pascal-Benink/MusicMaster/releases/latest";
+            string pastebinUrl = "https://pastebin.com/rejAKTNB";
+            string apiToken = "";
+
+            using (var httpClient = new HttpClient())
+            {
+                try
+                {
+                    var response = await httpClient.GetAsync(pastebinUrl);
+                    response.EnsureSuccessStatusCode(); // Ensure successful response
+
+                    var htmlContent = await response.Content.ReadAsStringAsync();
+                    apiToken = ExtractApiToken(htmlContent);
+                    /*                    textBox1.Visible = true;
+                                        textBox1.Text = apiToken;*/
+
+                }
+                catch (HttpRequestException ex)
+                {
+                    MessageBox.Show($"Failed to retrieve text: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
 
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "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");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; MSIE 11.0; Windows NT 10.0; WOW64; Trident/7.0)");
 
                 try
@@ -396,14 +570,16 @@ namespace MusicMaster
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string currentgithubversion = "v1.1.6.0";
+                        string currentgithubversion = "v1.2.0.0";
                         string json = await response.Content.ReadAsStringAsync();
                         dynamic release = JsonConvert.DeserializeObject(json);
                         string tagName = release.tag_name;
-                        /*label6.Text = "Latest Release Tag: " + tagName;*/
+                        /*                      label6.Visible = true;
+                                                label6.Text = tagName;
+                                                label6.Text = "Latest Release Tag: " + tagName;*/
                         if (tagName == currentgithubversion)
                         {
-
+                            // The current version is up to date
                         }
                         else
                         {
@@ -413,6 +589,11 @@ namespace MusicMaster
                             button3.Visible = true;
                         }
                     }
+                    else
+                    {
+                        label6.Visible = true;
+                        label6.Text = "An error occurred: " + response.StatusCode.ToString();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -421,15 +602,29 @@ namespace MusicMaster
                 }
             }
         }
+        public static string ExtractApiToken(string htmlContent)
+        {
+            string pattern = @"<div class=""de1"">([^<]+)</div>";
+            Match match = Regex.Match(htmlContent, pattern);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         private void NewVersion_Click(object sender, EventArgs e)
         {
-            string url = "https://github.com/Pascal-Benink/MusicMaster/releases/latest";
+            string url = "https://github.com/Pascal-Benink/MusicMaster/releases/latest/";
             Process.Start(new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
             });
+            Application.Exit();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -474,7 +669,7 @@ namespace MusicMaster
                     Skip_Click(sender, e);
                     skipable = false;
                 }
-                
+
             }
             if (e.KeyCode == Keys.MediaPreviousTrack)
             {
@@ -483,8 +678,73 @@ namespace MusicMaster
                 {
                     Back_Click(sender, e);
                     skipable = false;
-                }   
+                }
             }
         }
+        //select a specific musicfile
+        private void playlistListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (playlistListBox.SelectedItem != null)
+            {
+                var wantedMusicIndex = playlistListBox.SelectedIndex;
+                if (wantedMusicIndex != previousMusicIndex)
+                {
+                    ThisOneIsSellected = true;
+                    string selectedSong = playlistListBox.SelectedItem.ToString();
+                    /*MessageBox.Show("Selected Song: " + selectedSong);*/
+                    currentMusicIndex = playlistListBox.SelectedIndex;
+                    if (currentMusicIndex >= 0 && currentMusicIndex < musicFiles.Length)
+                    {
+                        player.controls.playItem(player.currentPlaylist.Item[currentMusicIndex]);
+                        if (playing == false)
+                        {
+                            Player();
+                        }
+                    }
+                }
+            }
+        }
+
+        private void bugreport_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            string url = "https://pascal-benink.github.io/Coding-enterprice-main/Musicmaster.html";
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        //get item index
+        static int GetItemIndex(IWMPPlaylist playlist, IWMPMedia currentItem)
+        {
+            for (int i = 0; i < playlist.count; i++)
+            {
+                IWMPMedia media = playlist.get_Item(i);
+                if (media.isIdentical[currentItem])
+                    return i;
+            }
+            return -1; // Current item not found in the playlist
+        }
+        //get copyright info
+        /*        static string GetCopyrightInformation()
+                {
+                    Assembly assembly = Assembly.GetExecutingAssembly();
+                    object[] attributes = assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
+
+                    if (attributes.Length > 0)
+                    {
+                        AssemblyCompanyAttribute companyAttribute = (AssemblyCompanyAttribute)attributes[0];
+                        return companyAttribute.Company;
+                    }
+
+                    return string.Empty;
+                }*/
+        //Shuffle has been removed
     }
 }
+
